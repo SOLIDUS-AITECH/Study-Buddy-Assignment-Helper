@@ -1,0 +1,77 @@
+version: '1.0'
+blocks:
+  16a6068a-3157-4b10-988e-2c1bffb43b7c:
+    type: starter
+    name: Start
+    inputs:
+      startWorkflow: manual
+    connections:
+      success: aa183893-81b3-4d84-af6b-81f0fd13cfe8
+  872b261b-936b-4eac-9274-b5a80a603d28:
+    type: agent
+    name: 'Agent 2 '
+    inputs:
+      systemPrompt: |-
+        Think about and find out the answer for each question here.
+
+        Only respond with the question number and answers.
+
+        etc. 
+
+        You can use search to find answers better
+      userPrompt: <file1.combinedContent>
+      model: gpt-4o
+      tools:
+        - type: serper
+          title: Serper
+          params:
+            hl: en
+            type: search
+            apiKey: '{{SERPER_API_KEY}}'
+          toolId: serper_search
+          isExpanded: true
+          usageControl: auto
+    connections:
+      success: 1b681e94-98ee-4571-89f8-d85dfcead1b0
+  033d859e-f3aa-4d82-b236-c393ff666bb0:
+    type: agent
+    name: 'Agent 1 '
+    inputs:
+      systemPrompt: Based on the content from this file look up some good study material for me to use and bring me back the relevant links.
+      userPrompt: <file1.combinedContent>
+      model: gpt-4o
+      tools:
+        - type: serper
+          title: Serper
+          params:
+            type: search
+            apiKey: '{{SERPER_API_KEY}}'
+          toolId: serper_search
+          isExpanded: true
+          usageControl: auto
+    connections:
+      success: 872b261b-936b-4eac-9274-b5a80a603d28
+  aa183893-81b3-4d84-af6b-81f0fd13cfe8:
+    type: file
+    name: 'File 1 '
+    inputs:
+      inputMethod: url
+      file:
+        - name: data structures -assignment - 1.pdf
+          path: /api/files/serve/s3/1769091876700-9d1f8816-509e-48b4-b106-ee2c67ff06c5-data-structures--assignment---1.pdf
+          size: 340316
+          type: application/pdf
+    connections:
+      success: 033d859e-f3aa-4d82-b236-c393ff666bb0
+  1b681e94-98ee-4571-89f8-d85dfcead1b0:
+    type: google_docs
+    name: 'Google Docs 1 '
+    inputs:
+      operation: read
+      title: Answers and study material
+      content: |-
+        Answers:
+        <agent2.content>
+
+        Study Material:
+        <agent1.content>
